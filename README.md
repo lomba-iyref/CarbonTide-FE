@@ -15,7 +15,7 @@ NEXT_PUBLIC_GEMINI_API_KEY=[YOUR GEMINI API KEY]
 How to get a Gemini API Key
 1. **Sign in to Google AI Studio**: Go to aistudio.google.com.
 2. **Generate Key**: On the left sidebar, click the "Get API key" button.
-3. **Create Project**: Click "Create API key in new project".
+3. **Create Project**: Click the "Create API key" button located in the top-right corner of the dashboard and create a new project. After that, click the "Create Key" button.
 4. **Copy The Key**: Copy the generated string (starts with AIza...).
 
 Then, run the development server:
