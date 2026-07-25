@@ -3,19 +3,41 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { User, Mail, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { User, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
+import { registerUser, ROLE_HOME, type UserRole } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
 
-type Role = "buyer" | "seller";
+type Role = UserRole;
 
 export default function RegisterPage() {
-  const [name, setName]       = useState("");
-  const [email, setEmail]     = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole]       = useState<Role>("buyer");
+  const router = useRouter();
 
-  function handleSubmit(e: React.FormEvent) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<Role>("buyer");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: hook up auth
+    setError(null);
+    setLoading(true);
+
+    try {
+      const user = await registerUser({ name, email, password, role });
+      const destination = user?.role ? ROLE_HOME[user.role] : ROLE_HOME[role];
+      router.push(destination);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Registrasi gagal. Coba lagi beberapa saat.";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -41,6 +63,13 @@ export default function RegisterPage() {
           <p className="text-c-l text-text-secondary mb-8">
             Daftar sekarang untuk memulai perjalanan karbon Anda.
           </p>
+
+          {error && (
+            <div className="mb-5 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-c-l text-red-700">
+              <AlertCircle className="size-4 shrink-0" />
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             {/* Name */}
@@ -80,6 +109,7 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={8}
                   className={inputCls}
                 />
               </InputIcon>
@@ -103,19 +133,20 @@ export default function RegisterPage() {
               </div>
             </FormField>
 
-            {/* <button
+            <button
               type="submit"
-              className="mt-2 w-full rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-2"
+              disabled={loading}
+              className="mt-2 w-full rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Buat Akun →
-            </button> */}
-
-            <Link
-              href="/login"
-              className="mt-2 w-full rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-2"
-            >
-              Buat Akun →
-            </Link>
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  Memproses...
+                </>
+              ) : (
+                <>Buat Akun →</>
+              )}
+            </button>
           </form>
 
           <p className="mt-8 text-center text-c-l text-text-secondary">
