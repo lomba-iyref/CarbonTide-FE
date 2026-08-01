@@ -49,16 +49,14 @@ export const ROLE_HOME: Record<UserRole, string> = {
  */
 export async function registerUser(payload: RegisterPayload): Promise<AuthUser> {
   const body = {
-    username: payload.email,
+    full_name: payload.name,
     email: payload.email,
     password: payload.password,
-    password2: payload.password,
-    full_name: payload.name,
-    name: payload.name,
+    confirm_password: payload.password, // sesuaikan kalau form register punya field confirm password sendiri
     role: payload.role,
   };
 
-  const data = await api.post<TokenResponse>("/accounts/register/", body, {
+  const data = await api.post<TokenResponse>("/api/accounts/register/", body, {
     auth: false,
   });
 
@@ -81,7 +79,7 @@ export async function loginUser(payload: LoginPayload): Promise<AuthUser | null>
     password: payload.password,
   };
 
-  const data = await api.post<TokenResponse>("/accounts/login/", body, {
+  const data = await api.post<TokenResponse>("/api/accounts/login/", body, {
     auth: false,
   });
 
@@ -98,14 +96,14 @@ export async function loginUser(payload: LoginPayload): Promise<AuthUser | null>
 }
 
 export async function fetchMe(): Promise<AuthUser | null> {
-  return api.get<AuthUser>("/accounts/me/");
+  return api.get<AuthUser>("/api/accounts/me/");
 }
 
 export async function logoutUser(): Promise<void> {
   const refresh = getRefreshToken();
   try {
     if (refresh) {
-      await api.post("/accounts/logout/", { refresh });
+      await api.post("/api/accounts/logout/", { refresh });
     }
   } finally {
     clearTokens();

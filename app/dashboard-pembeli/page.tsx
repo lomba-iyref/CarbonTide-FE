@@ -119,7 +119,7 @@ export default function BeliKredit() {
 
       const query = params.toString();
       const data = await api.get<RawMarketplaceProject[] | PaginatedResponse<RawMarketplaceProject>>(
-        `/marketplace/${query ? `?${query}` : ""}`,
+        `/api/marketplace/${query ? `?${query}` : ""}`,
         { auth: false }
       );
 
