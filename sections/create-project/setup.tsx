@@ -1,110 +1,183 @@
-"use client"
-import Steps from "./steps";
+// sections/create-project/setup.tsx
+"use client";
 import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardContent,
-    CardFooter,
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import {
-    Combobox,
-    ComboboxContent,
-    ComboboxInput,
-    ComboboxItem
-} from "@/components/ui/combobox";
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { MetodologiType, SetUpParams, StepType } from "@/interfaces/interface";
-import { Dispatch, SetStateAction } from "react";
+  ProjectFormState,
+  ProjectTypeValue,
+  RegistryValue,
+  MetodologiType,
+} from "@/interfaces/interface";
 
-export default function SetUp({ stateSetters, setStep }: { stateSetters: SetUpParams, setStep: Dispatch<SetStateAction<StepType>> })
-{
-    const { namaProyekProps, luasAreaProps, deforestasiProps, metodologiProps } = stateSetters;
-    const methodologies = ["VM0033 (Verra Blue Carbon)", "AR-ACM0003 (A/R CDM)"]
+const PROJECT_TYPE_OPTIONS: { value: ProjectTypeValue; label: string }[] = [
+  { value: "blue_carbon", label: "Blue Carbon / ARR" },
+  { value: "forestry", label: "Forestry / ARR" },
+  { value: "renewable_energy", label: "Renewable Energy" },
+  { value: "agriculture", label: "Agriculture" },
+  { value: "waste_management", label: "Waste Management" },
+  { value: "energy_efficiency", label: "Energy Efficiency" },
+  { value: "other", label: "Lainnya" },
+];
 
-    const [namaProyek, setNamaProyek] = namaProyekProps;
-    const [luasArea, setLuasArea] = luasAreaProps;
-    const [deforestasi, setDeforestasi] = deforestasiProps;
-    const [metodologi, setMetodologi] = metodologiProps;
+const REGISTRY_OPTIONS: { value: RegistryValue; label: string }[] = [
+  { value: "verra", label: "Verra (VCS)" },
+  { value: "gold_standard", label: "Gold Standard" },
+  { value: "acr", label: "American Carbon Registry (ACR)" },
+  { value: "car", label: "Climate Action Reserve (CAR)" },
+  { value: "plan_vivo", label: "Plan Vivo" },
+  { value: "other", label: "Lainnya" },
+];
 
-    return (
-        <div className="flex flex-col w-full gap-7 items-center justify-center">
-            <Steps step={0}/>
-            <Card className="w-full py-7">
-                <div className="flex flex-col items-center w-280.5 mx-auto gap-7">
-                    <CardHeader className="w-full">
-                        <CardTitle className="text-sh-l font-bold w-full border-b-text-secondary border-b pb-5">
-                            Identitas & Baseline Proyek
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex flex-row gap-10 text-c-l w-full">
-                        <div className="flex flex-col gap-5 w-135">
-                            <div className="flex flex-col gap-1 w-full">
-                                <Label htmlFor="namaProyek">Nama Proyek</Label>
-                                <Input 
-                                    id="namaProyek" 
-                                    value={namaProyek}
-                                    placeholder="Draft Proyek Mangrove" 
-                                    className="placeholder-text-secondary h-11 w-full"
-                                    onChange={(e) => setNamaProyek(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1 w-full">
-                                <Label htmlFor="metodologi">Metodologi (Registry)</Label>
-                                <Combobox items={methodologies}>
-                                    <ComboboxInput placeholder="Select a Methodology" value={metodologi} className="w-full h-11"/>
-                                    <ComboboxContent>
-                                        {
-                                            methodologies.map((method, index) => (
-                                                <ComboboxItem key={index} value={method} onClick={() => {
-                                                    const stateMethod = method as MetodologiType;
-                                                    setMetodologi(stateMethod);
-                                                }} className="hover:bg-gray-200">
-                                                    {method}
-                                                </ComboboxItem>
-                                            ))
-                                        }
-                                    </ComboboxContent>
-                                </Combobox>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-5 w-135">
-                            <div className="flex flex-col gap-1 w-full">
-                                <Label htmlFor="luasArea">Total Luas Area (ha)</Label>
-                                <Input 
-                                    id="luasArea" 
-                                    value={luasArea}
-                                    placeholder="10" 
-                                    className="placeholder-text-secondary h-11 w-full"
-                                    onChange={(e) => setLuasArea(Number(e.target.value))}
-                                />
-                            </div>
-                            <div className="flex flex-col gap-1 w-full">
-                                <Label htmlFor="deforestasi">Deforestasi Historis (%)</Label>
-                                <Input 
-                                    id="deforestasi"
-                                    value={deforestasi} 
-                                    placeholder="2.5" 
-                                    className="placeholder-text-secondary h-11 w-full"
-                                    onChange={(e) => setDeforestasi(Number(e.target.value))}
-                                />
-                            </div>
-                        </div>
-                    </CardContent>
-                    <CardFooter className="w-full bg-transparent py-">
-                        <Button 
-                            className="flex items-center justify-center w-full h-14.5 text-sh-l font-bold text-white hover:cursor-pointer hover:bg-blue-700"
-                            onClick={() => setStep(1)}
-                        >
-                            <p>Lanjut ke Data Biomasa</p>
-                            <ArrowRight className="size-5"/>
-                        </Button>
-                    </CardFooter>
-                </div>
-            </Card>
-        </div>
-    );
+const METODOLOGI_OPTIONS: MetodologiType[] = [
+  "VM0033 (Verra Blue Carbon)",
+  "VM0007 (REDD+ Methodology Framework)",
+  "AR-ACM0003 (Afforestation/Reforestation)",
+  "Lainnya",
+];
+
+const inputCls =
+  "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-c-l text-text-primary outline-none focus:border-primary transition";
+
+export default function SetUp({ formState }: { formState: ProjectFormState }) {
+  const [namaProyek, setNamaProyek] = formState.namaProyekProps;
+  const [projectType, setProjectType] = formState.projectTypeProps;
+  const [description, setDescription] = formState.descriptionProps;
+  const [country, setCountry] = formState.countryProps;
+  const [location, setLocation] = formState.locationProps;
+  const [metodologi, setMetodologi] = formState.metodologiProps;
+  const [registry, setRegistry] = formState.registryProps;
+  const [luasArea, setLuasArea] = formState.luasAreaProps;
+  const [deforestasi, setDeforestasi] = formState.deforestasiProps;
+  const [thumbnailUrl, setThumbnailUrl] = formState.thumbnailUrlProps;
+
+  const canContinue =
+    namaProyek.trim() !== "" && location.trim() !== "" && luasArea > 0;
+
+  return (
+    <div className="flex flex-col gap-6 rounded-3xl border border-border bg-white p-6 shadow-sm">
+      <Field label="Nama Proyek">
+        <input
+          className={inputCls}
+          value={namaProyek}
+          onChange={(e) => setNamaProyek(e.target.value)}
+          placeholder="Restorasi Mangrove Teluk Kelabat"
+        />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Tipe Proyek">
+          <select
+            className={inputCls}
+            value={projectType}
+            onChange={(e) => setProjectType(e.target.value as ProjectTypeValue)}
+          >
+            {PROJECT_TYPE_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Standar Registry">
+          <select
+            className={inputCls}
+            value={registry}
+            onChange={(e) => setRegistry(e.target.value as RegistryValue)}
+          >
+            {REGISTRY_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+
+      <Field label="Deskripsi Proyek">
+        <textarea
+          className={inputCls}
+          rows={4}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Ceritakan tujuan dan dampak proyek..."
+        />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Negara">
+          <input className={inputCls} value={country} onChange={(e) => setCountry(e.target.value)} />
+        </Field>
+        <Field label="Lokasi">
+          <input
+            className={inputCls}
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Bangka Belitung"
+          />
+        </Field>
+      </div>
+
+      <Field label="Metodologi">
+        <select
+          className={inputCls}
+          value={metodologi}
+          onChange={(e) => setMetodologi(e.target.value as MetodologiType)}
+        >
+          {METODOLOGI_OPTIONS.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Luas Area (Ha)">
+          <input
+            type="number"
+            min={0}
+            className={inputCls}
+            value={luasArea}
+            onChange={(e) => setLuasArea(Number(e.target.value) || 0)}
+          />
+        </Field>
+        <Field label="Tingkat Deforestasi Historis (%/tahun)">
+          <input
+            type="number"
+            min={0}
+            step={0.1}
+            className={inputCls}
+            value={deforestasi}
+            onChange={(e) => setDeforestasi(Number(e.target.value) || 0)}
+          />
+        </Field>
+      </div>
+
+      <Field label="URL Thumbnail">
+        <input
+          className={inputCls}
+          value={thumbnailUrl}
+          onChange={(e) => setThumbnailUrl(e.target.value)}
+          placeholder="https://..."
+        />
+      </Field>
+
+      <div className="flex justify-end">
+        <button
+          disabled={!canContinue}
+          onClick={() => formState.setStep(1)}
+          className="rounded-full bg-primary px-6 py-3 text-c-l font-semibold text-white shadow-sm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Lanjut ke Input Data MRV →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-c-l font-semibold text-text-secondary">{label}</p>
+      {children}
+    </div>
+  );
 }

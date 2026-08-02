@@ -1,199 +1,119 @@
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle
-} from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { CircleQuestionMark, ArrowRight } from 'lucide-react';
-import { DataParams, StepType } from "@/interfaces/interface";
-import Steps from "./steps";
-import { Dispatch, SetStateAction } from "react";
-import { calcBiomass, calcGrossCarbon } from "@/utils/util";
+// sections/create-project/data.tsx
+"use client";
+import { ProjectFormState } from "@/interfaces/interface";
 
-export default function Data({ stateSetters, setStep }: { stateSetters: DataParams, setStep: Dispatch<SetStateAction<StepType>>})
-{
-    const { jumlahPohonProps, avgDbhProps, avgTinggiProps, rtsRatioProps, carbonProps, grossCarbonProps } = stateSetters;
-    const [jumlahPohon, setJumlahPohon] = jumlahPohonProps;
-    const [avgDbh, setAvgDbh] = avgDbhProps;
-    const [avgTinggi, setAvgTinggi] = avgTinggiProps;
-    const [rtsRatio, setRtsRatio] = rtsRatioProps;
-    const [carbon, setCarbon] = carbonProps;
-    const [grossCarbon, setGrossCarbon] = grossCarbonProps;
+const inputCls =
+  "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-c-l text-text-primary outline-none focus:border-primary transition";
 
-    const updateGrossCarbon = () => {
-        const biomass = calcBiomass(jumlahPohon, avgDbh, avgTinggi);
-        setGrossCarbon(calcGrossCarbon(biomass, rtsRatio, carbon));
-    };
+export default function Data({ formState }: { formState: ProjectFormState }) {
+  const [jumlahPohon, setJumlahPohon] = formState.jumlahPohonProps;
+  const [avgDbh, setAvgDbh] = formState.avgDbhProps;
+  const [avgTinggi, setAvgTinggi] = formState.avgTinggiProps;
+  const [rtsRatio, setRtsRatio] = formState.rtsRatioProps;
+  const [soilCarbon, setSoilCarbon] = formState.soilCarbonProps;
 
-    return (
-        <div className="flex flex-col gap-7 mb-20">
-            <Steps step={1}/>
-            <Card className="flex w-305 items-center justify-center py-7">
-                <div className="flex flex-col items-center w-280.5 mx-auto gap-7">
-                    <CardHeader className="w-full">
-                        <CardTitle className="text-sh-l font-bold w-full border-b-text-secondary border-b pb-5">
-                            Pengukuran Karbon (Mangrove Pools)
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex flex-col gap-10 w-full">
-                        <div className="flex flex-col gap-5 w-full">
-                            <div className="flex w-full h-41.5 justify-center items-center bg-surface rounded-[8px] border-[#D9D9D9] border">
-                                <div className="flex flex-col gap-5">
-                                    <div className="flex flex-row gap-2 w-full items-start">
-                                        <p className="text-c-l font-bold">Above-Ground Biomass (AGB)</p>
-                                        <Tooltip>
-                                            <TooltipTrigger>
-                                                <CircleQuestionMark className="size-5 bg" color="#94A3B8"/>
-                                            </TooltipTrigger>
-                                            <TooltipContent className="bg-tertiary text-white text-center">
-                                                <p>
-                                                    AGB: Cadangan karbon pada bagian pohon yang 
-                                                    berada di atas tanah (batang, cabang, daun).
-                                                </p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </div>
-                                    <div className="flex flex-row gap-10">
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="jumlahPohon">Jumlah Pohon Dihitung</Label>
-                                            <Input
-                                                id="jumlahPohon"
-                                                value={jumlahPohon === 0 ? "" : jumlahPohon}
-                                                placeholder="Misal: 100" 
-                                                className="w-78 h-11 placeholder-text-secondary bg-white"
-                                                onChange={(e) => setJumlahPohon(Number(e.target.value))}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="avgDbh">Rata-rata DBH (cm)</Label>
-                                            <Input
-                                                id="avgDbh"
-                                                value={avgDbh === 0 ? "" : avgDbh}
-                                                placeholder="Misal: 15" 
-                                                className="w-78 h-11 placeholder-text-secondary bg-white"
-                                                onChange={(e) => {
-                                                    setAvgDbh(Number(e.target.value))
-                                                    updateGrossCarbon();
-                                                }}
-                                                type="number"
-                                                step={0.01}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="avgTinggi">Rata-rata Tinggi (m)</Label>
-                                            <Input
-                                                id="avgTinggi"
-                                                value={avgTinggi === 0 ? "" : avgTinggi}
-                                                placeholder="Misal: 2.5" 
-                                                className="w-78 h-11 placeholder-text-secondary bg-white"
-                                                onChange={(e) => {
-                                                    setAvgTinggi(Number(e.target.value));
-                                                    updateGrossCarbon();
-                                                }}
-                                                type="number"
-                                                step={0.01}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex w-full h-41.5 justify-center items-center bg-surface rounded-[8px] border-[#D9D9D9] border">
-                                <div className="flex flex-col gap-5">
-                                    <div className="flex flex-row gap-2 w-full items-start">
-                                        <p className="text-c-l font-bold">BGB & Soil Organic Carbon (SOC)</p>
-                                    </div>
-                                    <div className="flex flex-row gap-13">
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="rtsRatio" className="flex flex-row gap-2 items-center">
-                                                <p>Root-to-Shoot Ratio (BGB)</p>
-                                                <Tooltip>
-                                                    <TooltipTrigger>
-                                                        <CircleQuestionMark className="size-5 bg" color="#94A3B8"/>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="bg-tertiary text-white text-center">
-                                                        <p>
-                                                            BGB (Below-Ground Biomass): Cadangan karbon pada sistem 
-                                                            akar mangrove yang kompleks di bawah tanah.
-                                                        </p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </Label>
-                                            <Input
-                                                id="rtsRatio"
-                                                value={rtsRatio === 0 ? "" : rtsRatio}
-                                                placeholder="Misal: 100" 
-                                                className="w-120 h-11 placeholder-text-secondary bg-white"
-                                                onChange={(e) => {
-                                                    setRtsRatio(Number(e.target.value));
-                                                    updateGrossCarbon();
-                                                }}
-                                                type="number"
-                                                step={0.01}
-                                            />
-                                        </div>
-                                        <div className="flex flex-col gap-1">
-                                            <Label htmlFor="carbon" className="flex flex-row gap-2 items-center">
-                                                <p>Kandungan Karbon Tanah (tC/ha)</p>
-                                                <Tooltip>
-                                                    <TooltipTrigger>
-                                                        <CircleQuestionMark className="size-5 bg" color="#94A3B8"/>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent className="bg-tertiary text-white text-center">
-                                                        <p>
-                                                            SOC (Soil Organic Carbon): Karbon yang tersimpan di dalam sedimen 
-                                                            lumpur/tanah mangrove, yang merupakan penyimpan terbesar.
-                                                        </p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </Label>
-                                            <Input
-                                                id="carbon"
-                                                value={carbon === 0 ? "" : carbon}
-                                                placeholder="Misal: 15" 
-                                                className="w-120 h-11 placeholder-text-secondary bg-white"
-                                                onChange={(e) => {
-                                                    setCarbon(Number(e.target.value));
-                                                    updateGrossCarbon();
-                                                }}
-                                                type="number"
-                                                step={0.01}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-3 justify-center pl-10 bg-tertiary shadow-lg h-30 rounded-[16px]">
-                            <p className="text-c-l text-text-secondary">Total Gross Carbon Stock (AGB+BGB+SOC)</p>
-                            <p className="text-h3 font-bold text-white">{grossCarbon} tCO₂e</p>
-                        </div>
-                    </CardContent>
-                    <CardFooter className="flex flex-row gap-5 w-full bg-transparent py-">
-                        <Button 
-                            className="flex items-center justify-center w-83.5 h-14.5 text-c-l font-bold bg-gray-200 hover:cursor-pointer hover:bg-gray-300"
-                            onClick={() => setStep(0)}
-                        >
-                            <p>Kembali</p>
-                        </Button>
-                        <Button 
-                            className="flex items-center justify-center w-185 h-14.5 font-bold text-white hover:cursor-pointer hover:bg-blue-700"
-                            onClick={() => setStep(2)}
-                        >
-                            <p className="text-sh-l">Lanjut ke Risk & Compliance</p>
-                            <ArrowRight className="size-5"/>
-                        </Button>
-                    </CardFooter>
-                </div>
-            </Card>
+  const canContinue = jumlahPohon > 0 && avgDbh > 0 && avgTinggi > 0;
+
+  return (
+    <div className="flex flex-col gap-6 rounded-3xl border border-border bg-white p-6 shadow-sm">
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Jumlah Pohon (sampel/total)">
+          <input
+            type="number"
+            min={0}
+            className={inputCls}
+            value={jumlahPohon}
+            onChange={(e) => setJumlahPohon(Number(e.target.value) || 0)}
+          />
+        </Field>
+        <Field label="Root-to-Shoot Ratio">
+          <input
+            type="number"
+            min={0}
+            step={0.01}
+            className={inputCls}
+            value={rtsRatio}
+            onChange={(e) => setRtsRatio(Number(e.target.value) || 0)}
+          />
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Rata-rata DBH (cm)">
+          <input
+            type="number"
+            min={0}
+            step={0.1}
+            className={inputCls}
+            value={avgDbh}
+            onChange={(e) => setAvgDbh(Number(e.target.value) || 0)}
+          />
+        </Field>
+        <Field label="Rata-rata Tinggi Pohon (m)">
+          <input
+            type="number"
+            min={0}
+            step={0.1}
+            className={inputCls}
+            value={avgTinggi}
+            onChange={(e) => setAvgTinggi(Number(e.target.value) || 0)}
+          />
+        </Field>
+      </div>
+
+      <Field label="Soil Organic Carbon (ton C)">
+        <input
+          type="number"
+          min={0}
+          step={0.1}
+          className={inputCls}
+          value={soilCarbon}
+          onChange={(e) => setSoilCarbon(Number(e.target.value) || 0)}
+        />
+      </Field>
+
+      {/* Preview kalkulasi otomatis -- lihat komentar formula di parent page.tsx */}
+      <div className="rounded-2xl bg-tertiary p-5 text-white">
+        <p className="text-c-r text-white/60 mb-3">
+          Estimasi otomatis (AGB = 0.0673 × (ρD²H)^0.976) — validasi dengan
+          tim MRV sebelum submit final.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-c-r text-white/40 mb-1">Above Ground Biomass</p>
+            <p className="text-c-l font-bold">{formState.agb} ton</p>
+          </div>
+          <div>
+            <p className="text-c-r text-white/40 mb-1">Below Ground Biomass</p>
+            <p className="text-c-l font-bold">{formState.bgb} ton</p>
+          </div>
         </div>
-    );
+      </div>
+
+      <div className="flex justify-between">
+        <button
+          onClick={() => formState.setStep(0)}
+          className="rounded-full border border-border bg-white px-6 py-3 text-c-l font-semibold text-text-secondary hover:bg-surface transition"
+        >
+          ← Kembali
+        </button>
+        <button
+          disabled={!canContinue}
+          onClick={() => formState.setStep(2)}
+          className="rounded-full bg-primary px-6 py-3 text-c-l font-semibold text-white shadow-sm hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Lanjut ke Analisis Risiko →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-c-l font-semibold text-text-secondary">{label}</p>
+      {children}
+    </div>
+  );
 }

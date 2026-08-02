@@ -283,7 +283,7 @@ export default function BeliKredit() {
           {projects.map((project) => (
             <Link
               key={project.id}
-              href={`/dashboard-pembeli/${project.id}`}
+              href={`/marketplace/${project.id}`}
               className="group bg-white rounded-3xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
             >
               {/* Image */}

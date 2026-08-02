@@ -72,7 +72,7 @@ export default function Portofolio() {
               Lacak total emisi yang telah Anda kompensasi dan dampaknya bagi lingkungan.
             </p>
           </div>
-          <Link href="/beli-kredit">
+          <Link href="/marketplace">
             <div className="inline-flex items-center justify-center rounded-[8px] border border-blue-600 px-5 py-3 text-sm font-medium text-blue-600 shadow-sm transition hover:bg-blue-100">
               + Beli Kredit Lainnya
             </div>

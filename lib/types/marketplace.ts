@@ -51,4 +51,5 @@ export interface MarketplaceDetailAPI {
   impacts: ProjectImpactAPI[];
   faqs: ProjectFAQAPI[];
   documents: ProjectDocumentAPI[];
+  listing_id: string;
 }

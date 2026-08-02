@@ -100,8 +100,8 @@ export default function Navbar() {
             </>
           ) : user.role === "buyer" ? (
             <>
-              <Link href="/dashboard-pembeli" className={linkClass}>
-                Beli Kredit
+              <Link href="/marketplace" className={linkClass}>
+                marketplace
               </Link>
               <Link href="/portofolio" className={linkClass}>
                 Portofolio

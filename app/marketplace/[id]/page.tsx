@@ -1,4 +1,4 @@
-// app/dashboard-pembeli/[project]/page.tsx
+// app/,arketplace/[project]/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -122,7 +122,7 @@ export default function ProjectDetailPage() {
           {error ?? "Proyek tidak ditemukan."}
         </p>
         <Link
-          href="/dashboard-pembeli"
+          href="/marketplace"
           className="rounded-full border border-border bg-white px-4 py-2 text-c-l font-semibold text-text-secondary shadow-sm hover:bg-surface transition"
         >
           ← Kembali Ke Marketplace
@@ -147,7 +147,7 @@ export default function ProjectDetailPage() {
     <main className="pt-[130px] pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Back */}
       <Link
-        href="/dashboard-pembeli"
+        href="/marketplace"
         className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-c-l font-semibold text-text-secondary shadow-sm hover:bg-surface transition mb-8"
       >
         ← Kembali Ke Marketplace
@@ -403,7 +403,7 @@ export default function ProjectDetailPage() {
             <button
               onClick={() =>
                 router.push(
-                  `/dashboard-pembeli/pembayaran?projectId=${project.id}&listingId=${project.listing_id}&tons=${tons}`
+                  `/marketplace/pembayaran?projectId=${project.id}&listingId=${project.listing_id}&tons=${tons}`
                 )
               }
               disabled={availableTons === 0}

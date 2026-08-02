@@ -135,7 +135,7 @@ export default function PembayaranPage() {
           {loadError ?? "Proyek tidak ditemukan."}
         </p>
         <Link
-          href="/dashboard-pembeli"
+          href="/marketplace"
           className="rounded-full border border-border bg-white px-4 py-2 text-c-l font-semibold text-text-secondary shadow-sm hover:bg-surface transition"
         >
           ← Kembali Ke Marketplace
@@ -167,7 +167,7 @@ export default function PembayaranPage() {
           </a>
         )}
         <Link
-          href="/dashboard-pembeli"
+          href="/marketplace"
           className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-c-l font-semibold text-white shadow-sm hover:opacity-90 transition"
         >
           Kembali ke Marketplace
@@ -180,10 +180,10 @@ export default function PembayaranPage() {
   return (
     <main className="pt-[130px] pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <Link
-        href={`/dashboard-pembeli/${projectId}`}
+        href={`/marketplace/${projectId}`}
         className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-c-l font-semibold text-text-secondary shadow-sm hover:bg-surface transition mb-8"
       >
-        ← Kembali Ke Dashboard
+        ← Kembali Ke Katalog
       </Link>
 
       <h1 className="text-h2 font-bold text-text-primary text-center mb-10">
