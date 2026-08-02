@@ -58,7 +58,8 @@ function filenameFromUrl(url: string) {
 }
 
 export default function ProjectDetailPage() {
-  const { project: projectId } = useParams<{ project: string }>();
+  const { id: projectId } = useParams<{ id: string }>();
+  const params = useParams();
   const router = useRouter();
 
   const [project, setProject] = useState<MarketplaceDetailAPI | null>(null);
@@ -402,7 +403,7 @@ export default function ProjectDetailPage() {
             <button
               onClick={() =>
                 router.push(
-                  `/dashboard-pembeli/pembayaran?projectId=${project.id}&tons=${tons}`
+                  `/dashboard-pembeli/pembayaran?projectId=${project.id}&listingId=${project.listing_id}&tons=${tons}`
                 )
               }
               disabled={availableTons === 0}

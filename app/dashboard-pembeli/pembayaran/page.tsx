@@ -1,32 +1,71 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
+import { ApiError } from "@/lib/api";
+import { getMarketplaceProject } from "@/lib/services/marketplace";
+import { createPurchase } from "@/lib/services/transactions";
+import { MarketplaceDetailAPI } from "@/lib/types/marketplace";
+import { PaymentMethod, TransactionAPI } from "@/lib/types/transactions";
 
-const ORDER = {
-  project: {
-    name: "Restorasi Mangrove Teluk Kelabat",
-    location: "Bangka Belitung, Indonesia",
-    img: "https://images.unsplash.com/photo-1547471080-7cc2caa01a7e?w=80&q=80",
-  },
-  volumeTons: 10,
-  pricePerTon: 15,
-  platformFeePct: 0.05,
-};
-
-type PaymentMethod = "card" | "transfer";
+const inputCls =
+  "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-c-l text-text-primary outline-none focus:border-primary transition placeholder:text-text-secondary";
 
 export default function PembayaranPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const projectId = searchParams.get("projectId");
+  const listingId = searchParams.get("listingId");
+  const tonsParam = Number(searchParams.get("tons"));
+  const tons = Number.isFinite(tonsParam) && tonsParam > 0 ? tonsParam : 1;
+
+  const [project, setProject] = useState<MarketplaceDetailAPI | null>(null);
+  const [loadingProject, setLoadingProject] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   const [method, setMethod] = useState<PaymentMethod>("card");
   const [cardNum, setCardNum] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
-  const [confirmed, setConfirmed] = useState(false);
 
-  const subtotal = ORDER.volumeTons * ORDER.pricePerTon;
-  const fee = subtotal * ORDER.platformFeePct;
-  const total = subtotal + fee;
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [result, setResult] = useState<TransactionAPI | null>(null);
+
+  // ── Load project detail (untuk tampilkan ringkasan pesanan yang akurat) ──
+  useEffect(() => {
+    if (!projectId || !listingId) {
+      setLoadError("Data pesanan tidak lengkap. Silakan ulangi dari halaman proyek.");
+      setLoadingProject(false);
+      return;
+    }
+
+    let ignore = false;
+    setLoadingProject(true);
+    setLoadError(null);
+
+    getMarketplaceProject(projectId)
+      .then((data) => {
+        if (ignore) return;
+        setProject(data);
+      })
+      .catch((err) => {
+        if (ignore) return;
+        const message =
+          err instanceof ApiError ? err.message : "Gagal memuat data proyek.";
+        setLoadError(message);
+      })
+      .finally(() => {
+        if (!ignore) setLoadingProject(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [projectId, listingId]);
 
   const formatCardNum = (v: string) =>
     v
@@ -40,7 +79,73 @@ export default function PembayaranPage() {
     return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
   };
 
-  if (confirmed) {
+  const pricePerTon = Number(project?.price_per_credit ?? 0);
+  const platformFeePct = Number(project?.platform_fee_percentage ?? 0);
+  const subtotal = tons * pricePerTon;
+  const fee = subtotal * platformFeePct;
+  const total = subtotal + fee;
+
+  async function handleConfirm() {
+    if (!listingId) return;
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const transaction = await createPurchase({
+        listing_id: listingId,
+        quantity: tons,
+        payment_method: method,
+      });
+      setResult(transaction);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        // Sesi habis / belum login -> arahkan ke login, bawa balik ke halaman ini
+        router.push(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Gagal memproses pembayaran. Coba lagi.";
+      setSubmitError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  // ── Loading state ──
+  if (loadingProject) {
+    return (
+      <main className="pt-[130px] pb-24 max-w-7xl mx-auto px-4 flex items-center justify-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-3 text-text-secondary">
+          <Loader2 className="size-6 animate-spin" />
+          <p className="text-c-l">Memuat data pesanan...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Error state (data pesanan gagal dimuat) ──
+  if (loadError || !project) {
+    return (
+      <main className="pt-[130px] pb-24 max-w-7xl mx-auto px-4 flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <AlertCircle className="size-8 text-red-500" />
+        <p className="text-c-l text-text-secondary text-center max-w-sm">
+          {loadError ?? "Proyek tidak ditemukan."}
+        </p>
+        <Link
+          href="/dashboard-pembeli"
+          className="rounded-full border border-border bg-white px-4 py-2 text-c-l font-semibold text-text-secondary shadow-sm hover:bg-surface transition"
+        >
+          ← Kembali Ke Marketplace
+        </Link>
+      </main>
+    );
+  }
+
+  // ── Success state ──
+  if (result) {
     return (
       <main className="pt-[130px] pb-24 max-w-7xl mx-auto px-4 flex flex-col items-center gap-6 text-center">
         <CheckCircle className="size-16 text-secondary mt-10" />
@@ -48,9 +153,19 @@ export default function PembayaranPage() {
           Pembayaran Berhasil!
         </h1>
         <p className="text-c-l text-text-secondary max-w-sm">
-          Sertifikat pensiun kredit karbon Anda akan segera diterbitkan dan
-          dikirim ke email terdaftar.
+          Sertifikat pensiun kredit karbon Anda ({result.certificate_number}) telah
+          diterbitkan.
         </p>
+        {result.certificate_url && (
+          <a
+            href={result.certificate_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-c-l font-semibold text-primary underline underline-offset-2"
+          >
+            Unduh Sertifikat
+          </a>
+        )}
         <Link
           href="/dashboard-pembeli"
           className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-c-l font-semibold text-white shadow-sm hover:opacity-90 transition"
@@ -61,11 +176,11 @@ export default function PembayaranPage() {
     );
   }
 
+  // ── Form pembayaran ──
   return (
     <main className="pt-[130px] pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Back */}
       <Link
-        href="/dashboard-pembeli/1"
+        href={`/dashboard-pembeli/${projectId}`}
         className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-2 text-c-l font-semibold text-text-secondary shadow-sm hover:bg-surface transition mb-8"
       >
         ← Kembali Ke Dashboard
@@ -74,6 +189,13 @@ export default function PembayaranPage() {
       <h1 className="text-h2 font-bold text-text-primary text-center mb-10">
         Selesaikan Pembayaran
       </h1>
+
+      {submitError && (
+        <div className="max-w-2xl mx-auto mb-6 flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3">
+          <AlertCircle className="size-5 shrink-0" />
+          <p className="text-c-l flex-1">{submitError}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_400px] lg:items-start">
         {/* ── Payment Form ── */}
@@ -87,32 +209,26 @@ export default function PembayaranPage() {
             Metode Pembayaran
           </h2>
 
-          {/* Method options */}
           <div className="flex flex-col gap-3 mb-6">
             {(
               [
-                { val: "card",     label: "Kartu Kredit / Debit" },
-                { val: "transfer", label: "Bank Transfer / Invoice ESG" },
+                { val: "card", label: "Kartu Kredit / Debit" },
+                { val: "bank_transfer", label: "Bank Transfer / Invoice ESG" },
               ] as { val: PaymentMethod; label: string }[]
             ).map(({ val, label }) => (
               <label
                 key={val}
                 onClick={() => setMethod(val)}
                 className={`flex items-center gap-3 rounded-2xl border-2 px-5 py-4 cursor-pointer transition ${
-                  method === val
-                    ? "border-primary bg-blue-50"
-                    : "border-border bg-white"
+                  method === val ? "border-primary bg-blue-50" : "border-border bg-white"
                 }`}
               >
-                {/* Radio dot */}
                 <span
                   className={`flex size-4 shrink-0 items-center justify-center rounded-full border-2 ${
                     method === val ? "border-primary" : "border-border"
                   }`}
                 >
-                  {method === val && (
-                    <span className="block size-2 rounded-full bg-primary" />
-                  )}
+                  {method === val && <span className="block size-2 rounded-full bg-primary" />}
                 </span>
                 <span
                   className={`text-c-l font-semibold ${
@@ -125,7 +241,6 @@ export default function PembayaranPage() {
             ))}
           </div>
 
-          {/* Card fields */}
           {method === "card" && (
             <div className="flex flex-col gap-4">
               <FormField label="Nomor Kartu">
@@ -156,17 +271,19 @@ export default function PembayaranPage() {
                     placeholder="123"
                     maxLength={3}
                     value={cvc}
-                    onChange={(e) =>
-                      setCvc(e.target.value.replace(/\D/g, "").slice(0, 3))
-                    }
+                    onChange={(e) => setCvc(e.target.value.replace(/\D/g, "").slice(0, 3))}
                     className={inputCls}
                   />
                 </FormField>
               </div>
+              <p className="text-c-r text-text-secondary">
+                * Detail kartu ini belum diproses ke payment gateway sungguhan —
+                backend saat ini hanya mencatat metode pembayaran.
+              </p>
             </div>
           )}
 
-          {method === "transfer" && (
+          {method === "bank_transfer" && (
             <div className="rounded-2xl bg-surface border border-border p-5">
               <p className="text-c-l text-text-secondary leading-relaxed">
                 Invoice ESG akan dikirimkan ke email terdaftar dalam 1x24 jam
@@ -183,68 +300,57 @@ export default function PembayaranPage() {
             Ringkasan Pesanan
           </h2>
 
-          {/* Project row */}
           <div className="flex items-center gap-3 mb-6">
             <img
-              src={ORDER.project.img}
-              alt={ORDER.project.name}
+              src={project.thumbnail_url || "/placeholder-project.jpg"}
+              alt={project.project_name}
               className="size-14 rounded-2xl object-cover shrink-0"
             />
             <div>
               <p className="text-c-l font-bold text-text-primary leading-snug">
-                {ORDER.project.name}
+                {project.project_name}
               </p>
               <p className="text-c-r text-text-secondary">
-                {ORDER.project.location}
+                {project.location}
+                {project.country ? `, ${project.country}` : ""}
               </p>
             </div>
           </div>
 
-          {/* Price breakdown */}
           <div className="flex flex-col gap-3 mb-5">
+            <SummaryRow label="Volume Kredit" value={`${tons} tCO₂e`} />
+            <SummaryRow label="Harga per ton" value={`$${pricePerTon.toFixed(2)}`} />
+            <SummaryRow label="Subtotal" value={`$${subtotal.toFixed(2)}`} />
             <SummaryRow
-              label="Volume Kredit"
-              value={`${ORDER.volumeTons} tCO₂e`}
-            />
-            <SummaryRow
-              label="Harga per ton"
-              value={`$${ORDER.pricePerTon.toFixed(2)}`}
-            />
-            <SummaryRow
-              label="Subtotal"
-              value={`$${subtotal.toFixed(2)}`}
-            />
-            <SummaryRow
-              label="Biaya platform (5%)"
+              label={`Biaya platform (${(platformFeePct * 100).toFixed(0)}%)`}
               value={`$${fee.toFixed(2)}`}
             />
           </div>
 
-          {/* Gradient divider */}
           <div
             className="h-1 rounded-full mb-5"
-            style={{
-              background: "linear-gradient(to right, #2563EB, #00A083)",
-            }}
+            style={{ background: "linear-gradient(to right, #2563EB, #00A083)" }}
           />
 
-          {/* Total */}
           <div className="flex items-center justify-between mb-6">
-            <span className="text-sh-m font-bold text-text-primary">
-              Total Bayar
-            </span>
-            <span className="text-h2 font-bold text-primary">
-              ${total.toFixed(2)}
-            </span>
+            <span className="text-sh-m font-bold text-text-primary">Total Bayar</span>
+            <span className="text-h2 font-bold text-primary">${total.toFixed(2)}</span>
           </div>
 
-          {/* Confirm button */}
           <button
-            onClick={() => setConfirmed(true)}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95"
+            onClick={handleConfirm}
+            disabled={submitting}
+            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Konfirmasi &amp; Pensiunkan Kredit{" "}
-            <CheckCircle className="size-4" />
+            {submitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" /> Memproses...
+              </>
+            ) : (
+              <>
+                Konfirmasi &amp; Pensiunkan Kredit <CheckCircle className="size-4" />
+              </>
+            )}
           </button>
 
           <p className="mt-3 text-center text-c-r text-text-secondary">
@@ -256,16 +362,7 @@ export default function PembayaranPage() {
   );
 }
 
-const inputCls =
-  "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-c-l text-text-primary outline-none focus:border-primary transition placeholder:text-text-secondary";
-
-function FormField({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <p className="text-c-r font-semibold text-text-secondary mb-2">{label}</p>
