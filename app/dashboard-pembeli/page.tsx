@@ -85,10 +85,15 @@ function normalizeProject(raw: RawMarketplaceProject): MarketplaceProject {
 
 const PROJECT_TYPE_OPTIONS = [
   { value: "", label: "Semua Tipe Proyek" },
-  { value: "blue_carbon", label: "Blue Carbon" },
-  { value: "arr", label: "ARR" },
-  { value: "redd_plus", label: "REDD+" },
+  { value: "blue_carbon", label: "Blue Carbon / ARR" },
+  { value: "forestry", label: "Forestry / ARR" },
+  { value: "renewable_energy", label: "Renewable Energy" },
+  { value: "agriculture", label: "Agriculture" },
+  { value: "waste_management", label: "Waste Management" },
+  { value: "energy_efficiency", label: "Energy Efficiency" },
+  { value: "other", label: "Lainnya" },
 ];
+ 
 
 const REGISTRY_OPTIONS = [
   { value: "", label: "Standar Verifikasi" },

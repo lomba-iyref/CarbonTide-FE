@@ -5,12 +5,29 @@ export type PaymentMethod = "card" | "bank_transfer";
 
 export type TransactionStatus = "completed" | "failed";
 
-/**
- * Bentuk response dari TransactionSerializer.
- * NOTE: field DecimalField di DRF diserialize sebagai string secara default
- * (misal "150.00"), bukan number — jadi jangan lupa Number(...) saat dipakai
- * untuk kalkulasi/format di UI.
- */
+// NOTE: semua field DecimalField dari DRF diserialize sebagai string
+// (misal "150.00"), bukan number — jangan lupa Number(...) saat dipakai
+// untuk kalkulasi/format di UI.
+
+/** GET /api/transactions/summary/ */
+export interface PortfolioSummaryAPI {
+  total_offset_tons: string;
+  equivalent_trees: number;
+  equivalent_cars: number;
+  total_contribution: string;
+}
+
+/** Item dalam GET /api/transactions/ (list) */
+export interface TransactionListItemAPI {
+  id: string;
+  invoice_number: string;
+  project_name: string;
+  quantity: string;
+  status: TransactionStatus;
+  certificate_url: string | null;
+  created_at: string;
+}
+
 export interface TransactionAPI {
   id: string;
   invoice_number: string;
