@@ -41,125 +41,127 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4 py-12">
-      {/* Card — wider to fit extra fields */}
-      <div className="w-full max-w-4xl flex rounded-3xl overflow-hidden shadow-xl">
-        {/* ── Left panel ── */}
-        <LeftPanel
-          title="Masa Depan Karbon Biru Dimulai Dari Sini."
-          body="Bergabunglah dengan ekosistem CarbonTide. Hubungkan proyek reservasi alam dengan pendanaan global."
-        />
+    <div className="min-h-screen bg-surface flex flex-col">
+      {/* ── Top navbar ── */}
+      <SiteHeader />
 
-        {/* ── Right panel ── */}
-        <div className="flex-1 bg-white px-10 py-12 flex flex-col justify-center">
-          {/* Logo */}
-          <div className="mb-8">
-            <Logo />
-          </div>
+      {/* ── Card ── */}
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-4xl flex rounded-3xl overflow-hidden shadow-xl">
+          {/* ── Left panel ── */}
+          <LeftPanel
+            title="Masa Depan Karbon Biru Dimulai Dari Sini."
+            body="Bergabunglah dengan ekosistem CarbonTide. Hubungkan proyek reservasi alam dengan pendanaan global."
+          />
 
-          <h1 className="text-h3 font-bold text-text-primary mb-1">
-            Buat Akun Baru
-          </h1>
-          <p className="text-c-l text-text-secondary mb-8">
-            Daftar sekarang untuk memulai perjalanan karbon Anda.
-          </p>
+          {/* ── Right panel ── */}
+          <div className="flex-1 bg-white px-10 py-12 flex flex-col justify-center">
+            <h1 className="text-h3 font-bold text-text-primary mb-1">
+              Buat Akun Baru
+            </h1>
+            <p className="text-c-l text-text-secondary mb-8">
+              Daftar sekarang untuk memulai perjalanan karbon Anda.
+            </p>
 
-          {error && (
-            <div className="mb-5 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-c-l text-red-700">
-              <AlertCircle className="size-4 shrink-0" />
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Name */}
-            <FormField label="Nama / Nama Perusahaan">
-              <InputIcon icon={<User className="size-4 text-text-secondary" />}>
-                <input
-                  type="text"
-                  placeholder="Cth: PT ESG Lestari"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className={inputCls}
-                />
-              </InputIcon>
-            </FormField>
-
-            {/* Email */}
-            <FormField label="Email">
-              <InputIcon icon={<Mail className="size-4 text-text-secondary" />}>
-                <input
-                  type="email"
-                  placeholder="email@perusahaan.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className={inputCls}
-                />
-              </InputIcon>
-            </FormField>
-
-            {/* Password */}
-            <FormField label="Kata Sandi">
-              <InputIcon icon={<Lock className="size-4 text-text-secondary" />}>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  className={inputCls}
-                />
-              </InputIcon>
-            </FormField>
-
-            {/* Role selector */}
-            <FormField label="Tujuan Anda Mendaftar:">
-              <div className="grid grid-cols-2 gap-3">
-                <RoleCard
-                  active={role === "buyer"}
-                  onClick={() => setRole("buyer")}
-                  title="Pembeli (Buyer)"
-                  description="Saya ingin membeli kredit karbon untuk target ESG perusahaan."
-                />
-                <RoleCard
-                  active={role === "seller"}
-                  onClick={() => setRole("seller")}
-                  title="Penjual (Seller)"
-                  description="Saya memiliki proyek restorasi dan ingin menjual kredit."
-                />
+            {error && (
+              <div className="mb-5 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-c-l text-red-700">
+                <AlertCircle className="size-4 shrink-0" />
+                {error}
               </div>
-            </FormField>
+            )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-2 w-full rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  Memproses...
-                </>
-              ) : (
-                <>Buat Akun →</>
-              )}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* Name */}
+              <FormField label="Nama / Nama Perusahaan">
+                <InputIcon icon={<User className="size-4 text-text-secondary" />}>
+                  <input
+                    type="text"
+                    placeholder="Cth: PT ESG Lestari"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className={inputCls}
+                  />
+                </InputIcon>
+              </FormField>
 
-          <p className="mt-8 text-center text-c-l text-text-secondary">
-            Sudah memiliki akun?{" "}
-            <Link
-              href="/login"
-              className="font-semibold text-primary hover:underline"
-            >
-              Masuk di sini
-            </Link>
-          </p>
+              {/* Email */}
+              <FormField label="Email">
+                <InputIcon icon={<Mail className="size-4 text-text-secondary" />}>
+                  <input
+                    type="email"
+                    placeholder="email@perusahaan.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className={inputCls}
+                  />
+                </InputIcon>
+              </FormField>
+
+              {/* Password */}
+              <FormField label="Kata Sandi">
+                <InputIcon icon={<Lock className="size-4 text-text-secondary" />}>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={8}
+                    className={inputCls}
+                  />
+                </InputIcon>
+              </FormField>
+
+              {/* Role selector */}
+              <FormField label="Tujuan Anda Mendaftar:">
+                <div className="grid grid-cols-2 gap-3">
+                  <RoleCard
+                    active={role === "buyer"}
+                    onClick={() => setRole("buyer")}
+                    title="Pembeli (Buyer)"
+                    description="Saya ingin membeli kredit karbon untuk target ESG perusahaan."
+                  />
+                  <RoleCard
+                    active={role === "seller"}
+                    onClick={() => setRole("seller")}
+                    title="Penjual (Seller)"
+                    description="Saya memiliki proyek restorasi dan ingin menjual kredit."
+                  />
+                </div>
+              </FormField>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 w-full rounded-2xl bg-primary py-3.5 text-c-l font-bold text-white shadow-md hover:opacity-90 transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" />
+                    Memproses...
+                  </>
+                ) : (
+                  <>Buat Akun →</>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-8 border-t border-border pt-6 text-center">
+              <p className="text-c-l text-text-secondary">
+                Sudah memiliki akun?{" "}
+                <Link
+                  href="/login"
+                  className="font-semibold text-primary hover:underline"
+                >
+                  Masuk di sini
+                </Link>
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
@@ -201,6 +203,16 @@ function RoleCard({
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
+function SiteHeader() {
+  return (
+    <header className="w-full bg-white border-b border-border">
+      <div className="max-w-6xl mx-auto px-6 py-4">
+        <Logo />
+      </div>
+    </header>
+  );
+}
+
 function Logo() {
   return (
     <Link href="/" className="inline-flex items-center gap-2">
@@ -209,7 +221,7 @@ function Logo() {
         width={130}
         height={117}
         alt="CarbonTide logo"
-        className="h-auto"
+        className="h-9 w-auto"
       />
     </Link>
   );
@@ -217,15 +229,9 @@ function Logo() {
 
 function LeftPanel({ title, body }: { title: string; body: string }) {
   return (
-    <div className="hidden md:flex w-80 shrink-0 flex-col justify-between bg-tertiary p-10 text-white">
-      {/* Top logo mark */}
-      <div className="flex size-10 items-center justify-center rounded-full border-2 border-white/30">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="8" stroke="white" strokeWidth="1.5" />
-          <path d="M6 14 C6 9, 10 6, 14 8" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" />
-          <path d="M7 16 C9 12, 14 10, 16 13" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      </div>
+    <div className="hidden md:flex flex-1 shrink-0 flex-col justify-between bg-tertiary p-10 text-white">
+      {/* Top icon mark */}
+      <DropIcon />
 
       {/* Middle text */}
       <div className="flex flex-col gap-4">
@@ -242,6 +248,15 @@ function LeftPanel({ title, body }: { title: string; body: string }) {
         Transparan. Tervalidasi. Aman.
       </div>
     </div>
+  );
+}
+
+function DropIcon() {
+  return (
+    <svg width="40" height="40" viewBox="0 0 20 20" fill="none">
+      <path d="M6 14 C6 9, 10 6, 14 8" stroke="#60a5fa" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M7 16 C9 12, 14 10, 16 13" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
   );
 }
 

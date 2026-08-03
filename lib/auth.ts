@@ -12,7 +12,9 @@ export interface AuthUser {
   id: number | string;
   email: string;
   username?: string;
+  
   role?: UserRole;
+  
   [key: string]: unknown;
 }
 
@@ -37,7 +39,7 @@ export interface RegisterPayload {
 
 /** Tujuan redirect setelah login/register berhasil, berdasarkan role. */
 export const ROLE_HOME: Record<UserRole, string> = {
-  buyer: "/dashboard-pembeli",
+  buyer: "/marketplace",
   seller: "/dashboard-penjual",
 };
 

@@ -158,9 +158,12 @@ export default function BeliKredit() {
   }, [search, projectType, registry]);
 
   return (
-    <main className="pt-[130px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
+    // w-full: mencegah <main> menyusut mengikuti lebar konten (shrink-to-fit)
+    // saat berada di dalam parent flex/grid — tanpa ini, lebar halaman bisa
+    // berbeda antara state kosong (konten pendek) dan state terisi (grid lebar).
+    <main className="w-full pt-[130px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24">
       {/* Header */}
-      <div className="mb-8">
+      <div className="w-full mb-8">
         <h1 className="text-h1 font-bold text-text-primary mb-3">
           Jelajahi Proyek Blue Carbon
         </h1>
@@ -171,7 +174,7 @@ export default function BeliKredit() {
       </div>
 
       {/* Search & Filters */}
-      <div className="bg-white rounded-3xl border border-border shadow-sm p-4 mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="w-full bg-white rounded-3xl border border-border shadow-sm p-4 mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
         {/* Search */}
         <div className="flex items-center gap-3 flex-1 border border-border rounded-2xl px-4 py-3 bg-surface">
           <svg
@@ -232,7 +235,7 @@ export default function BeliKredit() {
 
       {/* Error state */}
       {error && !loading && (
-        <div className="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 mb-8">
+        <div className="w-full flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3 mb-8">
           <AlertCircle className="size-5 shrink-0" />
           <p className="text-c-l flex-1">{error}</p>
           <button
@@ -246,7 +249,7 @@ export default function BeliKredit() {
 
       {/* Loading state */}
       {loading && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="w-full grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
@@ -266,7 +269,7 @@ export default function BeliKredit() {
 
       {/* Empty state */}
       {!loading && !error && projects.length === 0 && (
-        <div className="flex flex-col items-center justify-center text-center py-24 text-text-secondary">
+        <div className="w-full flex flex-col items-center justify-center text-center py-24 text-text-secondary">
           <SearchX className="size-10 mb-3" />
           <p className="text-sh-m font-semibold text-text-primary mb-1">
             Tidak ada proyek ditemukan
@@ -279,7 +282,7 @@ export default function BeliKredit() {
 
       {/* Project Grid */}
       {!loading && !error && projects.length > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="w-full grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <Link
               key={project.id}
