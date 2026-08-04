@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id">
-      <body className={poppins.className}>
+      <body className={poppins.className+" flex flex-col items-center w-screen"}>
         <AuthProvider>
           <TooltipProvider>
             <Navbar />
