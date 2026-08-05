@@ -1,5 +1,6 @@
 // interfaces/interface.ts
 import { Dispatch, SetStateAction } from "react";
+import { GeoJSONPolygon } from "@/components/map-draw";
 
 export type StepType = 0 | 1 | 2 | 3;
 export type StateProp<T> = [T, Dispatch<SetStateAction<T>>];
@@ -64,6 +65,7 @@ export interface ProjectFormState {
   luasAreaProps: StateProp<number>;
   deforestasiProps: StateProp<number>;
   thumbnailUrlProps: StateProp<string>;
+  areaGeojsonProps: StateProp<GeoJSONPolygon | null>;
 
   // ── Data MRV ──
   jumlahPohonProps: StateProp<number>;

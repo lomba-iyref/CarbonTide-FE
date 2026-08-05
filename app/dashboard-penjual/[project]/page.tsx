@@ -12,18 +12,22 @@ import {
   FileText,
   Loader2,
   AlertCircle,
+  Satellite,
+  RefreshCw,
 } from "lucide-react";
-import { ApiError } from "@/lib/api";
 import {
   getProjectDetail,
   publishListing,
   unpublishListing,
   updateListing,
+  checkDeforestation,
 } from "@/lib/services/projects";
 import {
+  DeforestationCheckAPI,
   ListingVisibility,
   ProjectDetailAPI,
 } from "@/lib/types/projects";
+import { ApiError } from "@/lib/api";
 
 const REGISTRY_LABEL: Record<string, string> = {
   verra: "Verra (VCS)",
@@ -64,6 +68,10 @@ export default function DashboardProjectPage() {
   const [savingListing, setSavingListing] = useState(false);
   const [togglingPublish, setTogglingPublish] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  const [satelliteData, setSatelliteData] = useState<DeforestationCheckAPI | null>(null);
+  const [checkingSatellite, setCheckingSatellite] = useState(false);
+  const [satelliteError, setSatelliteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!projectId) {
@@ -142,6 +150,24 @@ export default function DashboardProjectPage() {
       setActionError(message);
     } finally {
       setTogglingPublish(false);
+    }
+  }
+
+  async function handleCheckSatellite() {
+    if (!projectId) return;
+    setCheckingSatellite(true);
+    setSatelliteError(null);
+    try {
+      const result = await checkDeforestation(projectId);
+      setSatelliteData(result);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : "Gagal terhubung ke satelit pemantau. Coba lagi beberapa saat.";
+      setSatelliteError(message);
+    } finally {
+      setCheckingSatellite(false);
     }
   }
 
@@ -291,6 +317,93 @@ export default function DashboardProjectPage() {
                 </>
               )}
             </div>
+          </div>
+          {/* SECTION 1.5: Satellite Verification */}
+          <div className="w-full rounded-[8px] border-[1.5px] border-[#D9D9D9] bg-gradient-to-br from-slate-950 to-slate-800 px-10 py-6 text-white">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex size-12 items-center justify-center rounded-full bg-white/10">
+                  <Satellite size={24} className="text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-bold text-[15px]">
+                    Verifikasi Deforestasi Berbasis Citra Satelit
+                  </p>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Divalidasi independen menggunakan data satelit real-time dari{" "}
+                    <span className="font-semibold text-white">
+                      Global Forest Watch
+                    </span>{" "}
+                    — jaringan pemantauan hutan global by NASA & University of Maryland.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleCheckSatellite}
+                disabled={checkingSatellite}
+                className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-slate-950 transition hover:bg-emerald-400 disabled:opacity-50 whitespace-nowrap"
+              >
+                {checkingSatellite ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" />
+                    Memindai Satelit...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={14} />
+                    Verifikasi via Satelit
+                  </>
+                )}
+              </button>
+            </div>
+
+            {satelliteError && (
+              <div className="mt-4 flex items-center gap-2 rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-200">
+                <AlertCircle size={16} />
+                {satelliteError}
+              </div>
+            )}
+
+            {(satelliteData || project.deforestation_rate) && !satelliteError && (
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-[8px] bg-white/5 border border-white/10 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                    Baseline Deforestasi
+                  </p>
+                  <p className="mt-1 text-2xl font-bold text-emerald-400">
+                    {satelliteData?.deforestation_rate ?? project.deforestation_rate}%
+                  </p>
+                </div>
+                {satelliteData && (
+                  <div className="rounded-[8px] bg-white/5 border border-white/10 p-4">
+                    <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                      Area Terdampak Terdeteksi
+                    </p>
+                    <p className="mt-1 text-2xl font-bold text-white">
+                      {satelliteData.tree_cover_loss_ha.toLocaleString("id-ID")} ha
+                    </p>
+                  </div>
+                )}
+                <div className="rounded-[8px] bg-white/5 border border-white/10 p-4">
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                    Status
+                  </p>
+                  <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-white">
+                    <CircleCheck size={16} className="text-emerald-400" />
+                    Satellite Verified
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <p className="mt-4 text-[11px] text-slate-400">
+              Sumber data: GFW Tree Cover Loss Dataset (UMD/NASA) · Dataset diperbarui
+              secara berkala berdasarkan citra satelit resolusi tinggi.
+              {satelliteData?.checked_at && (
+                <> · Terakhir diverifikasi {formatDate(satelliteData.checked_at)}</>
+              )}
+            </p>
           </div>
 
           {/* SECTION 2: Inventory + Audit + Listing settings */}

@@ -29,6 +29,7 @@ export default function Report({ formState }: { formState: ProjectFormState }) {
           registry: formState.registryProps[0],
           area_hectares: formState.luasAreaProps[0],
           deforestation_rate: formState.deforestasiProps[0],
+          area_geojson: formState.areaGeojsonProps[0],
           expected_credits: formState.credit,
           thumbnail_url: formState.thumbnailUrlProps[0] || null,
         },
