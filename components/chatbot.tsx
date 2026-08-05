@@ -159,18 +159,16 @@ function BotCard({
 
 function TypingIndicator() {
     return (
-        <div className="relative flex flex-row gap-2 w-full justify-start">
+        <div className="flex flex-row gap-2 w-full justify-start">
             <Bot />
 
-            <div className="relative translate-y-1 flex flex-col gap-1 items-start">
+            <div className="flex flex-col gap-1">
                 <p>TideBot</p>
 
-                <div className="bg-gray-200 rounded-xl px-4 py-3">
-                    <div className="flex gap-1">
-                        <span className="size-2 rounded-full bg-gray-500 animate-bounce [animation-delay:-0.3s]" />
-                        <span className="size-2 rounded-full bg-gray-500 animate-bounce [animation-delay:-0.15s]" />
-                        <span className="size-2 rounded-full bg-gray-500 animate-bounce" />
-                    </div>
+                <div className="bg-gray-200 rounded-xl px-4 py-3 flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce" />
+                    <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:150ms]" />
+                    <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:300ms]" />
                 </div>
             </div>
         </div>
