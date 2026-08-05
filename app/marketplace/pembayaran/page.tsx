@@ -13,13 +13,21 @@ import { PaymentMethod, TransactionAPI } from "@/lib/types/transactions";
 const inputCls =
   "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-c-l text-text-primary outline-none focus:border-primary transition placeholder:text-text-secondary";
 
-export default function PembayaranPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+export default function PembayaranPage({
+  searchParams,
+}: {
+  searchParams: {
+    projectId?: string,
+    listingId?: string,
+    tons?: string
+  }
+}) {
 
-  const projectId = searchParams.get("projectId");
-  const listingId = searchParams.get("listingId");
-  const tonsParam = Number(searchParams.get("tons"));
+  const router = useRouter();
+
+  const projectId = searchParams.projectId;
+  const listingId = searchParams.listingId;
+  const tonsParam = Number(searchParams.tons);
   const tons = Number.isFinite(tonsParam) && tonsParam > 0 ? tonsParam : 1;
 
   const [project, setProject] = useState<MarketplaceDetailAPI | null>(null);
