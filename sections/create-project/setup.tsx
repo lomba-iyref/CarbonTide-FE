@@ -1,11 +1,21 @@
 // sections/create-project/setup.tsx
 "use client";
+import dynamic from "next/dynamic";
 import {
   ProjectFormState,
   ProjectTypeValue,
   RegistryValue,
   MetodologiType,
 } from "@/interfaces/interface";
+
+const MapDraw = dynamic(() => import("@/components/map-draw"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[400px] items-center justify-center rounded-2xl border border-border bg-surface text-c-l text-text-secondary">
+      Memuat peta...
+    </div>
+  ),
+});
 
 const PROJECT_TYPE_OPTIONS: { value: ProjectTypeValue; label: string }[] = [
   { value: "blue_carbon", label: "Blue Carbon / ARR" },
@@ -47,9 +57,13 @@ export default function SetUp({ formState }: { formState: ProjectFormState }) {
   const [luasArea, setLuasArea] = formState.luasAreaProps;
   const [deforestasi, setDeforestasi] = formState.deforestasiProps;
   const [thumbnailUrl, setThumbnailUrl] = formState.thumbnailUrlProps;
+  const [areaGeojson, setAreaGeojson] = formState.areaGeojsonProps;
 
   const canContinue =
-    namaProyek.trim() !== "" && location.trim() !== "" && luasArea > 0;
+    namaProyek.trim() !== "" &&
+    location.trim() !== "" &&
+    luasArea > 0 &&
+    areaGeojson !== null;
 
   return (
     <div className="flex flex-col gap-6 rounded-3xl border border-border bg-white p-6 shadow-sm">
@@ -114,6 +128,15 @@ export default function SetUp({ formState }: { formState: ProjectFormState }) {
           />
         </Field>
       </div>
+
+      <Field label="Area Proyek (Verifikasi Satelit)">
+        <MapDraw value={areaGeojson} onChange={setAreaGeojson} />
+        <p className="text-c-r text-text-secondary mt-2">
+          Gambar batas area proyek pakai tool polygon di pojok kanan atas peta.
+          Data ini dipakai sistem untuk memverifikasi baseline deforestasi secara
+          independen lewat citra satelit Global Forest Watch.
+        </p>
+      </Field>
 
       <Field label="Metodologi">
         <select

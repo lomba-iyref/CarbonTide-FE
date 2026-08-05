@@ -1,5 +1,6 @@
 // lib/types/projects.ts
 import { ProjectTypeValue, RegistryValue, RiskLevelValue } from "@/interfaces/interface";
+import { GeoJSONPolygon } from "@/components/map-draw";
 
 /** Sesuai ProjectCreateSerializer */
 /** GET /api/projects/dashboard-summary/ */
@@ -118,6 +119,7 @@ export interface ProjectCreatePayload {
   registry: RegistryValue;
   area_hectares: number;
   deforestation_rate: number;
+  area_geojson: GeoJSONPolygon | null;
   expected_credits: number;
   thumbnail_url: string | null;
 }
@@ -156,4 +158,11 @@ export interface ProjectFullCreateResponse {
     status: string;
     [key: string]: unknown;
   };
+}
+
+/** POST /api/projects/{id}/check-deforestation/ */
+export interface DeforestationCheckAPI {
+  deforestation_rate: string;
+  tree_cover_loss_ha: number;
+  checked_at: string;
 }

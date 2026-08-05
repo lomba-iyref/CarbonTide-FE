@@ -8,6 +8,7 @@ import {
   ProjectFullCreateResponse,
   ProjectListItemAPI,
   UpdateListingPayload,
+  DeforestationCheckAPI,
 } from "@/lib/types/projects";
 
 /** GET /api/projects/{id}/ */
@@ -108,5 +109,19 @@ export async function createFullProject(
     });
   }
 
+  return data;
+}
+
+export async function checkDeforestation(
+  id: string,
+  year?: number
+): Promise<DeforestationCheckAPI> {
+  const data = await api.post<DeforestationCheckAPI>(
+    `/api/projects/${id}/check-deforestation/`,
+    year ? { year } : undefined
+  );
+  if (!data) {
+    throw new ApiError("Sesi login berakhir. Silakan login kembali.", { status: 401 });
+  }
   return data;
 }

@@ -13,6 +13,7 @@ import {
   ProjectFormState,
   RISK_OPTIONS,
 } from "@/interfaces/interface";
+import { GeoJSONPolygon } from "@/components/map-draw";
 
 // ── ASUMSI kalkulasi biomassa & kredit karbon ──────────────────────────────
 // AGB memakai rumus alometrik yang sama dengan yang ditampilkan di halaman
@@ -66,6 +67,7 @@ export default function CreateProject() {
   const luasAreaProps = useState(0);
   const deforestasiProps = useState(0);
   const thumbnailUrlProps = useState("");
+  const areaGeojsonProps = useState<GeoJSONPolygon | null>(null);
 
   // ── Data MRV ──
   const jumlahPohonProps = useState(0);
@@ -126,6 +128,7 @@ export default function CreateProject() {
     luasAreaProps,
     deforestasiProps,
     thumbnailUrlProps,
+    areaGeojsonProps,
     jumlahPohonProps,
     avgDbhProps,
     avgTinggiProps,
