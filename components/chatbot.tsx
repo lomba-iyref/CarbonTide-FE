@@ -133,12 +133,7 @@ function BotCard({
                     />
                 ))}
 
-                {loading && (
-                    <Chat
-                        from="TideBot"
-                        message="🤔 Sedang mencari informasi..."
-                    />
-                )}
+                {loading && <TypingIndicator />}
                 <div ref={bottomRef}/>
             </CardContent>
             <CardFooter className="bg-white flex flex-col gap-3">
@@ -160,6 +155,26 @@ function BotCard({
             </CardFooter>
         </Card>
     )
+}
+
+function TypingIndicator() {
+    return (
+        <div className="relative flex flex-row gap-2 w-full justify-start">
+            <Bot />
+
+            <div className="relative translate-y-1 flex flex-col gap-1 items-start">
+                <p>TideBot</p>
+
+                <div className="bg-gray-200 rounded-xl px-4 py-3">
+                    <div className="flex gap-1">
+                        <span className="size-2 rounded-full bg-gray-500 animate-bounce [animation-delay:-0.3s]" />
+                        <span className="size-2 rounded-full bg-gray-500 animate-bounce [animation-delay:-0.15s]" />
+                        <span className="size-2 rounded-full bg-gray-500 animate-bounce" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function BotButton({ setOpenBot }: { setOpenBot: Dispatch<SetStateAction<boolean>> })
