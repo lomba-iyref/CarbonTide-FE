@@ -7,6 +7,7 @@ import {
 import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, FileText } from 'lucide-react';
+import Link from "next/link";
 
 export default function Hero()
 {
@@ -31,14 +32,18 @@ export default function Hero()
                         Membuka akses pendanaan bagi komunitas pesisir secara mudah dan kredibel.
                     </p>
                     <div className="flex flex-col lg:flex-row gap-5 xl:gap-10 w-full text-sh-m xl:text-sh-l">
-                        <Button className="flex flex-row items-center justify-center gap-1 w-full lg:w-82.5 h-14.5 font-bold">
-                            <p>Jelajahi Proyek</p>
-                            <ArrowRight className="size-7 xl:size-9.5 font-bold"/>
-                        </Button>
-                        <Button className="flex flex-row gap-4 bg-[#1E293B] border-[#94A3B8] border w-full lg:w-91 h-14.5 font-bold">
-                            <FileText className="size-6 xl:size-7"/>
-                            <p>Daftar Proyek (MRV)</p>
-                        </Button>
+                        <Link href="/marketplace">
+                            <Button className="flex flex-row items-center justify-center gap-1 w-full lg:w-82.5 h-14.5 font-bold">
+                                <p>Jelajahi Proyek</p>
+                                <ArrowRight className="size-7 xl:size-9.5 font-bold"/>
+                            </Button>
+                        </Link>
+                        <Link href="/login">
+                            <Button className="flex flex-row gap-4 bg-[#1E293B] border-[#94A3B8] border w-full lg:w-91 h-14.5 font-bold">
+                                <FileText className="size-6 xl:size-7"/>
+                                <p>Daftar Proyek (MRV)</p>
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </CardContent>
