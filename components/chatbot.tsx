@@ -72,7 +72,7 @@ function BotCard({
         </Button>
 
     return (
-        <Card className="flex flex-col w-115">
+        <Card className="flex flex-col w-xs md:w-xl lg:w-115">
             <CardHeader className="flex flex-row items-center justify-between border-b">
                 <div className="flex flex-row items-center gap-2">
                     <Bot className="size-8"/>
