@@ -4,11 +4,7 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Bot, X, SendHorizontal } from "lucide-react";
 import { Textarea } from "./ui/textarea";
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({
-    apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY
-});
+import { ai } from "@/lib/chatbot";
 
 function Chat({ from, message }: { from: string, message: string })
 {
@@ -51,19 +47,14 @@ function BotCard({
     }
 
     const answerMessage = async () => {
-        const content = `Kamu adalah chabot interaktif dari sebuah aplikasi. 
-                        Berikan aku langsung jawaban singkat (tidak terlalu singkat dan tidak terlalu panjang), 
-                        serta tanpa kalimat pembuka ataupun penutup, dari pertanyaan berikut ini: \"${message}\"`;
+        const res = await fetch("/api/chat", {
+        method: "POST",
+        body: JSON.stringify({ message }),
+        });
 
-        const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: content,
-        })
+        const data = await res.json();
 
-        const botMessage = response.text || "can't answer";
-        console.log(botMessage);
-
-        addNewMessage(botMessage);
+        addNewMessage(data.text);
     }
 
     const handleSend = async () => {
