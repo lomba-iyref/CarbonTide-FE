@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CircleCheck, Calculator, ArrowRight } from 'lucide-react';
-import { useReveal } from "@/hooks/use-reveal";
+import { useReveal } from "../hooks/use-reveal";
 
 function CalculatorSection() {
     const { ref, isVisible } = useReveal<HTMLDivElement>();
