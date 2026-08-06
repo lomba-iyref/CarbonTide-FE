@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ApiError } from "@/lib/api";
 import { getPortfolioSummary, listTransactions } from "@/lib/services/transactions";
 import { PortfolioSummaryAPI, TransactionListItemAPI } from "@/lib/types/transactions";
+import { downloadCertificatePdf } from "@/lib/certificate/generateCertificatePdf";
+import { fetchMe, AuthUser } from "@/lib/auth"; // sesuaikan path
 
 const STATUS_STYLE: Record<string, string> = {
   completed: "bg-emerald-100 text-emerald-700",
@@ -30,17 +32,20 @@ export default function Portofolio() {
   const [transactions, setTransactions] = useState<TransactionListItemAPI[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     let ignore = false;
     setLoading(true);
     setError(null);
 
-    Promise.all([getPortfolioSummary(), listTransactions()])
-      .then(([summaryData, txData]) => {
+    Promise.all([getPortfolioSummary(), listTransactions(), fetchMe()])
+      .then(([summaryData, txData, userData]) => {
         if (ignore) return;
         setSummary(summaryData);
         setTransactions(txData);
+        setCurrentUser(userData);
       })
       .catch((err) => {
         if (ignore) return;
@@ -61,6 +66,24 @@ export default function Portofolio() {
 
   const totalOffsetTons = Number(summary?.total_offset_tons ?? 0);
   const totalContribution = Number(summary?.total_contribution ?? 0);
+
+  async function handleDownloadCertificate(tx: TransactionListItemAPI) {
+    setDownloadingId(tx.id);
+    try {
+      await downloadCertificatePdf(
+        {
+          buyerName: resolveBuyerName(currentUser),
+          projectName: tx.project_name,
+          quantityTons: Number(tx.quantity),
+          serialNumber: (tx as any).certificate_number ?? tx.invoice_number,
+          retiredAt: formatDate(tx.created_at),
+        },
+        `Sertifikat-${tx.invoice_number}.pdf`
+      );
+    } finally {
+      setDownloadingId(null);
+    }
+  }
 
   return (
     <div className="min-h-screen">
@@ -182,18 +205,19 @@ export default function Portofolio() {
                           >
                             {STATUS_LABEL[tx.status] ?? tx.status}
                           </span>
-                          {tx.certificate_url ? (
-                            <a
-                              href={tx.certificate_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex flex-row items-center gap-2"
+                          {tx.status === "completed" ? (
+                            <button
+                              onClick={() => handleDownloadCertificate(tx)}
+                              disabled={downloadingId === tx.id}
+                              className="flex flex-row items-center gap-2 disabled:opacity-50"
                             >
-                              <Download size={20} color="#2563EB" />
-                              <span className="flex items-center gap-2 text-blue-600 font-semibold cursor-pointer">
-                                PDF
-                              </span>
-                            </a>
+                              {downloadingId === tx.id ? (
+                                <Loader2 size={20} className="animate-spin text-blue-600" />
+                              ) : (
+                                <Download size={20} color="#2563EB" />
+                              )}
+                              <span className="text-blue-600 font-semibold cursor-pointer">PDF</span>
+                            </button>
                           ) : (
                             <span className="text-slate-400 text-xs">-</span>
                           )}
@@ -234,16 +258,19 @@ export default function Portofolio() {
                         </div>
 
                         <div className="pt-1">
-                          {tx.certificate_url ? (
-                            <a
-                              href={tx.certificate_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-blue-600 font-semibold"
+                          {tx.status === "completed" ? (
+                            <button
+                              onClick={() => handleDownloadCertificate(tx)}
+                              disabled={downloadingId === tx.id}
+                              className="inline-flex items-center gap-2 text-blue-600 font-semibold disabled:opacity-50"
                             >
-                              <Download size={18} color="#2563EB" />
+                              {downloadingId === tx.id ? (
+                                <Loader2 size={18} className="animate-spin" />
+                              ) : (
+                                <Download size={18} color="#2563EB" />
+                              )}
                               Unduh Sertifikat (PDF)
-                            </a>
+                            </button>
                           ) : (
                             <span className="text-slate-400 text-xs">Sertifikat belum tersedia</span>
                           )}
@@ -259,4 +286,13 @@ export default function Portofolio() {
       </main>
     </div>
   );
+}
+
+function resolveBuyerName(user: AuthUser | null): string {
+  if (!user) return "Pengguna";
+  const candidates = [user.full_name, user.name, user.username, user.email];
+  const found = candidates.find(
+    (v): v is string => typeof v === "string" && v.trim().length > 0
+  );
+  return found ?? "Pengguna";
 }

@@ -4,11 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle, Loader2, AlertCircle } from "lucide-react";
-import { ApiError } from "@/lib/api";
+import { ApiError} from "@/lib/api";
 import { getMarketplaceProject } from "@/lib/services/marketplace";
 import { createPurchase } from "@/lib/services/transactions";
 import { MarketplaceDetailAPI } from "@/lib/types/marketplace";
 import { PaymentMethod, TransactionAPI } from "@/lib/types/transactions";
+import { fetchMe, AuthUser } from "@/lib/auth";
+import { downloadCertificatePdf } from "@/lib/certificate/generateCertificatePdf";
+
 
 const inputCls =
   "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-c-l text-text-primary outline-none focus:border-primary transition placeholder:text-text-secondary";
@@ -42,6 +45,8 @@ export default function PaymentClient({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [result, setResult] = useState<TransactionAPI | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [downloadingCert, setDownloadingCert] = useState(false);
 
   // ── Load project detail (untuk tampilkan ringkasan pesanan yang akurat) ──
   useEffect(() => {
@@ -76,6 +81,12 @@ export default function PaymentClient({
       ignore = true;
     };
   }, [projectId, listingId]);
+
+  useEffect(() => {
+    fetchMe()
+      .then(setCurrentUser)
+      .catch(() => setCurrentUser(null)); // silent fail, fallback ke "Pengguna"
+  }, []);
 
   const formatCardNum = (v: string) =>
     v
@@ -124,6 +135,31 @@ export default function PaymentClient({
     }
   }
 
+  async function handleDownloadCertificate() {
+    if (!result) return;
+    setDownloadingCert(true);
+    try {
+      await downloadCertificatePdf(
+        {
+          buyerName: resolveBuyerName(currentUser),
+          projectName: project?.project_name ?? "-",
+          quantityTons: tons,
+          // ASUMSI: TransactionAPI punya certificate_number.
+          // Kalau ada juga invoice_number, pakai itu sebagai fallback.
+          serialNumber: result.certificate_number ?? (result as any).invoice_number ?? "-",
+          // ASUMSI: TransactionAPI punya created_at / retired_at.
+          // Sesuaikan field-nya kalau namanya beda.
+          retiredAt: new Date(
+            (result as any).created_at ?? (result as any).retired_at ?? Date.now()
+          ).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }),
+        },
+        `Sertifikat-${result.certificate_number}.pdf`
+      );
+    } finally {
+      setDownloadingCert(false);
+    }
+  }
+
   // ── Loading state ──
   if (loadingProject) {
     return (
@@ -166,16 +202,19 @@ export default function PaymentClient({
           Sertifikat pensiun kredit karbon Anda ({result.certificate_number}) telah
           diterbitkan.
         </p>
-        {result.certificate_url && (
-          <a
-            href={result.certificate_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-c-l font-semibold text-primary underline underline-offset-2"
-          >
-            Unduh Sertifikat
-          </a>
-        )}
+        <button
+          onClick={handleDownloadCertificate}
+          disabled={downloadingCert}
+          className="inline-flex items-center gap-2 text-c-l font-semibold text-primary underline underline-offset-2 disabled:opacity-50"
+        >
+          {downloadingCert ? (
+            <>
+              <Loader2 className="size-4 animate-spin" /> Membuat sertifikat...
+            </>
+          ) : (
+            "Unduh Sertifikat"
+          )}
+        </button>
         <Link
           href="/marketplace"
           className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-c-l font-semibold text-white shadow-sm hover:opacity-90 transition"
@@ -388,4 +427,13 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
       <span className="font-semibold text-text-primary">{value}</span>
     </div>
   );
+}
+
+function resolveBuyerName(user: AuthUser | null): string {
+  if (!user) return "Pengguna";
+  const candidates = [user.full_name, user.name, user.username, user.email];
+  const found = candidates.find(
+    (v): v is string => typeof v === "string" && v.trim().length > 0
+  );
+  return found ?? "Pengguna";
 }
