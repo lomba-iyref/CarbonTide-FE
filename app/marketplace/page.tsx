@@ -23,6 +23,7 @@ interface RawMarketplaceProject {
   location?: string;
   country?: string;
   registry?: string;
+  thumbnail_url?: string;
   image?: string;
   image_url?: string;
   cover_image?: string;
@@ -73,7 +74,7 @@ function normalizeProject(raw: RawMarketplaceProject): MarketplaceProject {
     trees: trees !== undefined ? String(trees) : "-",
     fishers: fishers !== undefined ? `${fishers} Nelayan` : "-",
     pricePerTon: Number(price) || 0,
-    img: raw.image || raw.image_url || raw.cover_image || FALLBACK_IMG,
+    img: raw.thumbnail_url || raw.image || raw.image_url || raw.cover_image || FALLBACK_IMG,
   };
 }
 
