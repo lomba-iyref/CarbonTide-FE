@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { TrendingUp, ChartColumn } from "lucide-react";
-import { useReveal } from "@/hooks/use-reveal";
+import { useReveal } from "../hooks/use-reveal";
 import type { ReactNode } from "react";
 
 type WhyCardProps = {
