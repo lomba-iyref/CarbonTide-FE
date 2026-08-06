@@ -1,5 +1,5 @@
 "use client"
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 import { Bot, X, SendHorizontal } from "lucide-react";
@@ -13,6 +13,7 @@ function Chat({ from, message }: { from: string, message: string })
     const position = fromBot ? "start" : "end";
     const bgColor = fromBot ? "gray-200" : "primary";
     const textColor = fromBot ? "black" : "white";
+    
 
     return (
         <div className={`relative flex flex-row gap-2 w-full justify-${position}`}>
@@ -29,38 +30,76 @@ function Chat({ from, message }: { from: string, message: string })
 
 function BotCard({ 
         setOpenBot, 
-        messageProps, 
-        messagesProps 
-    }: { 
-        setOpenBot: Dispatch<SetStateAction<boolean>>, 
-        messageProps: [string, Dispatch<SetStateAction<string>>], 
-        messagesProps: [string[], Dispatch<SetStateAction<string[]>>] 
+        messageProps,
+    }: {
+        setOpenBot: Dispatch<SetStateAction<boolean>>;
+        messageProps: [string, Dispatch<SetStateAction<string>>];
     })
 {
-    const [messages, setMessages] = messagesProps;
     const [message, setMessage] = messageProps;
+    const [loading, setLoading] = useState(false);
 
-    const addNewMessage = (message: string) => {
-        const newMessages = messages.copyWithin(-1, -1);
-        newMessages.push(message);
-        setMessages(newMessages);
+    const bottomRef = useRef<HTMLDivElement>(null);
+
+    type Message = {
+        from: "You" | "TideBot";
+        text: string;
     }
 
-    const answerMessage = async () => {
-        const res = await fetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({ message }),
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            from: "TideBot",
+            text: "Halo! Ada yang bisa aku bantu?"
+        }
+    ]);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({
+            behavior: "smooth",
         });
+    }, [messages, loading]);
 
-        const data = await res.json();
+    const addNewMessage = (
+        from: "You" | "TideBot",
+        text: string
+    ) => {
+        setMessages(prev => [
+            ...prev,
+            {
+                from,
+                text,
+            },
+        ]);
+    };
 
-        addNewMessage(data.text);
-    }
+    const answerMessage = async (userMessage: string) => {
+        setLoading(true);
+
+        try {
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                body: JSON.stringify({
+                    message: userMessage,
+                }),
+            });
+
+            const data = await res.json();
+            addNewMessage("TideBot", data.text);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSend = async () => {
-        addNewMessage(message);
-        answerMessage();
+        if (!message.trim()) return;
+
+        addNewMessage("You", message);
+
+        const currentMessage = message;
+
         setMessage("");
+
+        await answerMessage(currentMessage);
     }
 
     const button = message === "" ?
@@ -85,11 +124,21 @@ function BotCard({
                     <X color="black" className="size-7"/>
                 </Button>
             </CardHeader>
-            <CardContent className="flex flex-col gap-3 h-50 overflow-y-auto w-full">
-                {messages.map((message, index) => <Chat from={index % 2 === 0 ? "TideBot" : "You"} message={message} key={index}/>)}
+            <CardContent className="flex flex-col gap-3 h-50 overflow-y-auto">
+                {messages.map((msg, index) => (
+                    <Chat
+                        key={index}
+                        from={msg.from}
+                        message={msg.text}
+                    />
+                ))}
+
+                {loading && <TypingIndicator />}
+                <div ref={bottomRef}/>
             </CardContent>
             <CardFooter className="bg-white flex flex-col gap-3">
                 <Textarea 
+                    disabled={loading}
                     value={message} placeholder="Type your question here." 
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={(e) => {
@@ -108,10 +157,29 @@ function BotCard({
     )
 }
 
+function TypingIndicator() {
+    return (
+        <div className="flex flex-row gap-2 w-full justify-start">
+            <Bot />
+
+            <div className="flex flex-col gap-1">
+                <p>TideBot</p>
+
+                <div className="bg-gray-200 rounded-xl px-4 py-3 flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce" />
+                    <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:150ms]" />
+                    <div className="w-2 h-2 rounded-full bg-gray-500 animate-bounce [animation-delay:300ms]" />
+                </div>
+            </div>
+        </div>
+    );
+}
+
 function BotButton({ setOpenBot }: { setOpenBot: Dispatch<SetStateAction<boolean>> })
 {
     return (
         <Button 
+            
             className="flex flex-col items-center gap-1 text-black justify-center size-20 rounded-full bg-white border-gray-300 hover:bg-gray-200"
             onClick={() => setOpenBot(true)}
         >
@@ -124,12 +192,11 @@ function BotButton({ setOpenBot }: { setOpenBot: Dispatch<SetStateAction<boolean
 export default function ChatBot()
 {
     const [openBot, setOpenBot] = useState(false);
-    const messagesProps = useState(["Halo! Ada yang bisa aku bantu?"])
     const messageProps = useState("");
 
     return (
         <div className="fixed z-1 bottom-10 right-10 rounded-full shadow-lg">
-            {openBot ? <BotCard messagesProps={messagesProps} messageProps={messageProps} setOpenBot={setOpenBot}/> : <BotButton setOpenBot={setOpenBot}/>}
+            {openBot ? <BotCard  messageProps={messageProps} setOpenBot={setOpenBot}/> : <BotButton setOpenBot={setOpenBot}/>}
         </div>
     );
 }
